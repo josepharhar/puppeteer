@@ -233,6 +233,18 @@ module.exports.addTests = function({testRunner, expect, CHROME}) {
       const responseBuffer = await response.buffer();
       expect(responseBuffer.equals(imageBuffer)).toBe(true);
     });
+    fit('should return actual data sent over wire when charset is wrong', async ({page, server}) => {
+      const unicodeData = Buffer.from('unicode: 测试');
+      server.setRoute('/bad-charset', async (req, res) => {
+        res.writeHead(200, {'content-type': 'text/plain; charset=us-ascii'});
+        res.end(unicodeData);
+      });
+      const response = await page.goto(server.PREFIX + '/bad-charset');
+      const responseBuffer = await response.buffer();
+      console.log(unicodeData);
+      console.log(responseBuffer);
+      expect(responseBuffer.equals(unicodeData)).toBe(true);
+    });
   });
 
   describe('Response.statusText', function() {
